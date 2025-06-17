@@ -1,89 +1,95 @@
 package T1;
 
-//Custom Exception
-class InvalidProductException extends Exception {
- public InvalidProductException(String message) {
-     super(message);
+
+abstract class Flight {
+ protected String flightNumber;
+ protected String origin;
+ protected String destination;
+ protected double baseFare;
+
+ public Flight(String flightNumber, String origin, String destination, double baseFare) {
+     this.flightNumber = flightNumber;
+     this.origin = origin;
+     this.destination = destination;
+     this.baseFare = baseFare;
+ }
+
+ // Abstract method
+ public abstract double calculateFare();
+
+ // Display method (can be overridden)
+ public void displayDetails() {
+     System.out.println("Flight Number: " + flightNumber);
+     System.out.println("From: " + origin + " To: " + destination);
+     System.out.println("Base Fare: ₹" + baseFare);
  }
 }
 
-//Product Class
-class Product {
- int productId;
- String productName;
- double price;
- int quantity;
+//DomesticFlight class
+class DomesticFlight extends Flight {
+ private static final double domesticTaxRate = 0.10;
 
- // Constructor with all fields
- public Product(int productId, String productName, double price, int quantity) throws InvalidProductException {
-     if (price < 0 || quantity < 0) {
-         throw new InvalidProductException("Price and Quantity must be non-negative.");
-     }
-     this.productId = productId;
-     this.productName = productName;
-     this.price = price;
-     this.quantity = quantity;
+ public DomesticFlight(String flightNumber, String origin, String destination, double baseFare) {
+     super(flightNumber, origin, destination, baseFare);
  }
 
- // Constructor with productId and productName only
- public Product(int productId, String productName) {
-     this.productId = productId;
-     this.productName = productName;
-     this.price = 0.0;
-     this.quantity = 0;
+ @Override
+ public double calculateFare() {
+     return baseFare + (baseFare * domesticTaxRate);
  }
 
- // Method to display product info
- public void display() {
-     System.out.println("Product ID: " + productId + ", Name: " + productName +
-             ", Price: " + price + ", Quantity: " + quantity);
+ @Override
+ public void displayDetails() {
+     super.displayDetails();
+     System.out.println("Domestic Tax: 10%");
+     System.out.println("Total Fare: " + calculateFare());
+     System.out.println("----------------------------");
  }
 }
 
-//Product Manager Class
-public class T2 {
+//InternationalFlight class
+class InternationalFlight extends Flight {
+ private static final double internationalTaxRate = 0.20;
+ private double immigrationFee;
 
- // Overloaded addProduct() method - full details
- public static Product addProduct(int productId, String productName, double price, int quantity) throws InvalidProductException {
-     return new Product(productId, productName, price, quantity);
+ public InternationalFlight(String flightNumber, String origin, String destination, double baseFare, double immigrationFee) {
+     super(flightNumber, origin, destination, baseFare);
+     this.immigrationFee = immigrationFee;
  }
 
- // Overloaded addProduct() method - name and price only
- public static Product addProduct(String productName, double price) throws InvalidProductException {
-     return new Product(0, productName, price, 0);  // default productId=0, quantity=0
+ @Override
+ public double calculateFare() {
+     return baseFare + (baseFare * internationalTaxRate) + immigrationFee;
  }
 
- // Overloaded addProduct() method - name, price, and quantity
- public static Product addProduct(String productName, double price, int quantity) throws InvalidProductException {
-     return new Product(0, productName, price, quantity); // default productId=0
+ @Override
+ public void displayDetails() {
+     super.displayDetails();
+     System.out.println("International Tax: 20%");
+     System.out.println("Immigration Fee: ₹" + immigrationFee);
+     System.out.println("Total Fare: " + calculateFare());
+     System.out.println("----------------------------");
  }
+}
 
+//Main class using polymorphism
+public class T3 {
  public static void main(String[] args) {
-     try {
-         // Using constructor with all fields
-         Product p1 = new Product(101, "Laptop", 50000, 5);
-         p1.display();
+     // Create polymorphic array of Flight
+     Flight[] flights = new Flight[4];
 
-         // Using constructor with only ID and name
-         Product p2 = new Product(102, "Mouse");
-         p2.display();
+     // Add domestic and international flights
+     flights[0] = new DomesticFlight("D101", "Delhi", "Mumbai", 5000);
+     flights[1] = new InternationalFlight("I201", "Delhi", "Dubai", 15000, 3000);
+     flights[2] = new DomesticFlight("D102", "Bangalore", "Chennai", 3000);
+     flights[3] = new InternationalFlight("I202", "Mumbai", "London", 25000, 5000);
 
-         // Using overloaded addProduct methods
-         Product p3 = addProduct(103, "Keyboard", 1200, 10);
-         Product p4 = addProduct("Monitor", 8000);
-         Product p5 = addProduct("Speaker", 1500, 4);
-
-         // Display added products
-         p3.display();
-         p4.display();
-         p5.display();
-
-         // Triggering custom exception with negative values
-         Product p6 = addProduct(104, "Camera", -4000, 2);  // This will throw exception
-
-     } catch (InvalidProductException e) {
-         System.out.println("Exception Caught: " + e.getMessage());
+     // Display details dynamically using polymorphism
+     for (Flight flight : flights) {
+         flight.displayDetails(); // dynamic method dispatch
      }
  }
 }
+
+
 
